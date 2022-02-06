@@ -1,4 +1,4 @@
-# Minecraft image to bundle tool
+# Minecraft Image to bundle tool
 # Main File
 # (C) 2022 by Jacob (ahhhh6980@gmail.com)
 
@@ -51,17 +51,6 @@ def generate_palette(palette):
 
     return colors
 
-def ordered_dither(img):
-    newIMG = img.copy()
-    M = 1/4 * np.array([[0,2], [3,1]])
-    r = .1
-    height, width, depth = img.shape
-    for y in range(height):
-        for x in range(width):
-            c = newIMG[y][x]
-            newIMG[y][x] = ((c + r * (M[x % 2][y%2] - 1/2)) // 16) * 16
-    return newIMG
-
 def bgr_to_hsv(bgr):
     rgb = np.array(bgr)
     rgb_f = rgb / 255
@@ -70,7 +59,7 @@ def bgr_to_hsv(bgr):
 neighbors = True
 def region_distance(mat1, mat2):
     approx = 0
-    weights = 1 / np.array([[50,25,50],[25,1,25],[50,25,50]])
+    weights = 1 / np.array([[25,12,25],[12,1,12],[25,12,25]])
     for j in range(3):
         for i in range(3):
             color_mat1 = bgr_to_hsv(mat1[j][i])
@@ -197,7 +186,7 @@ def generate_datapack(fname, pname, size, preview):
 def main():
     args = sys.argv[1:]
     fname = 'lobster.png'
-    size = '128x128'
+    size = '32x32'
     pname = 'other'
     preview = True
 
