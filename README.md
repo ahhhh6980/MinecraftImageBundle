@@ -1,6 +1,10 @@
 # MinecraftImageBundle
 Convert images to mc bundles! :)
 
+
+pip install -r requirements.txt
+
+
 example usage:
 python main.py -f lobster.png -s 32x32 -p other --preview
 
