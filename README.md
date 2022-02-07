@@ -15,3 +15,5 @@ python main.py -f lobster.png -s 32x32 -p other --preview
 
 other sizes and palettes are available, this even supports texturepacks
 just make a collection of the item images and their id's ingame, and make a new folder under "palettes"
+
+![](output/lobster128x128_preview.png)
