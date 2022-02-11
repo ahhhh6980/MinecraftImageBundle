@@ -19,7 +19,7 @@ from helpers import *
 import sys, os, cv2, shutil, time, numpy as np
 script_dir = os.getcwd()
 
-def generate_nbt_data(img, fname, pname, palette, preview, dithered, limit_magnitude, neighbors):
+def generate_nbt_data(img, fname, pname, palette, preview, dithered, limit_magnitude):
     height, width, channels = img.shape
     palette_dir = script_dir+'/palettes/'+pname
     nbt_data = ''
@@ -54,7 +54,7 @@ def time_func(text, func, *args):
     print(text, "Finished In", end - start, "Seconds!")
     return output
 
-def generate_datapack(fname, pname, size, preview, dithered, neighbors, cutoff):
+def generate_datapack(fname, pname, size, preview, dithered, cutoff):
     print("Starting "+fname+" at "+size+" using palette '"+pname+"'!")
     size = list(map(int, size.split("x")))
 
@@ -74,7 +74,7 @@ def generate_datapack(fname, pname, size, preview, dithered, neighbors, cutoff):
     if dithered:
         image = time_func( "Dithering", floyd_steinberg_dithering, image, palette, cutoff)
 
-    command = 'give @p bundle{Items:[' + time_func("Command Gen", generate_nbt_data, image, bname, pname, palette, preview, dithered, limit_magnitude, neighbors)[:-1] + ']}'
+    command = 'give @p bundle{Items:[' + time_func("Command Gen", generate_nbt_data, image, bname, pname, palette, preview, dithered, limit_magnitude)[:-1] + ']}'
     cDir = script_dir+"/datapacks"
     
     try:
@@ -129,7 +129,6 @@ def main():
     cutoff = '50'
     preview = True
     dithered = False
-    neighbors = False
 
     for i,e in enumerate(args):
         if '-f' == e: fname = args[i+1]
@@ -140,7 +139,7 @@ def main():
         if '-d' == e:   cutoff = args[i+1]
 
     cutoff = int(cutoff)
-    generate_datapack(fname, pname, size, preview, dithered, neighbors, cutoff)
+    generate_datapack(fname, pname, size, preview, dithered, cutoff)
 
 if __name__ == "__main__":
     sys.exit(main())

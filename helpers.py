@@ -2,27 +2,18 @@ import colorsys, cv2, os, numpy as np
 script_dir = os.getcwd()
 
 def compute_item_color(img, m, fname):
-    object_forward_made = False
-    object_backward_made = False
     img_channels = np.array([*cv2.split(cv2.resize(img,(18,18)))])
     img_channels = np.where(img_channels[3] == 0, 0, img_channels)
-    #print("V", v)
-    #img_channels = np.where(img_channels[3] == 0, 255, img_channels)
-    #img_channels[3] = np.where(img_channels[3] < 255, 255, img_channels[3])
     colors = []
     for channel in img_channels[:3]:
         # Turn into 9 3x3 regions
         region = channel[4:-4, 4:-4]
-        #regions = channel.reshape(3, 6, -1, 6).swapaxes(1,2).reshape(-1, 6, 6)
         # Remove low frequency components
         frequency = np.fft.fft2(region)
         frequency = np.where(np.abs(frequency) < 6*6*m, complex(0), frequency)
         reduced_img = np.fft.ifft2(frequency).real.astype(np.uint8)
         # Return averaged regions
         region = reduced_img.real.astype(np.uint8)
-        #region = np.delete(region, np.where(img_channels[3] < 254))
-        #region = np.where(img_channels[3] < 254, 127, region)
-        
         quant = 0
         for y in range(10):
             for x in range(10):
@@ -50,15 +41,11 @@ def generate_palette(palette, m):
 def bad_color_distance(c1, c2):
     c1 = np.abs(c1)
     c2 = np.abs(c2)
-    # c2 = np.array([*colorsys.rgb_to_hsv(*(np.array(c2[::-1])/255))])
-    # c2[2] = c2[2] * 1.1
-    # c2 = np.array([*colorsys.hsv_to_rgb(*(np.array(c2)))])[::-1] * 255
     dc = c2 - c1
     r = (c1[2] + c2[2]) / 2
     dr = ((2 + (r / 256)) * dc[2] * dc[2])
     dg = (4 * dc[1] * dc[1])
     db = ((2 + ((255 - r) / 256)) * dc[0] * dc[0])
-    #print(db,dg,dr)
     d_color = np.sqrt(db + dg + dr)
     return d_color
 
@@ -85,26 +72,20 @@ def get_gamut_range(palette):
     return [minc, maxc]
 
 def floyd_steinberg_dithering(img, palette, cutoff):
-    print(cutoff)
     h,w,d = img.shape
-    r = get_gamut_range(palette)
-    print("palette minimums:",r[0])
-    print("palette maximums:",r[1])
     new_img = img.copy()
+    r = get_gamut_range(palette)
     new_img = ((new_img / 255) * (min(r[1]) - max(r[0]))) + max(r[0])
-    #new_img = ((new_img / 255) * (r[1] - r[0])) + r[0]
     for y in range(h):
         for x in range(w):
             old_pixel = np.array(new_img[y][x])
             new_pixel = compute_approx_color(old_pixel, palette, 0)
             new_img[y][x] = new_pixel
             quant_error = (old_pixel - new_pixel) 
-            #print(x,y,quant_error.std())
             if (quant_error.std() > cutoff): quant_error = quant_error / 2
             if x < 1 or x > w-2 or y > h-2: continue
             new_img[y  ][x+1] = (new_img[y  ][x+1] + (quant_error * 7/16))
             new_img[y+1][x  ] = (new_img[y+1][x  ] + (quant_error * 5/16))
             new_img[y+1][x-1] = (new_img[y+1][x-1] + (quant_error * 3/16))
             new_img[y+1][x+1] = (new_img[y+1][x+1] + (quant_error * 1/16))
-    print(new_img.min(), new_img.max())
     return new_img
